@@ -55,9 +55,9 @@ add_library(tinf
   src/tinfgzip.c
   src/tinflate.c
   src/tinfzlib.c
-  src/tinf.h
+  include/tinf.h
 )
-target_include_directories(tinf PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>)
+target_include_directories(tinf PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>)
 
 #
 # tgunzip
