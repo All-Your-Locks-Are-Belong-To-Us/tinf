@@ -219,13 +219,13 @@ struct greatest_prng {
     unsigned char random_order; /* use random ordering? */
     unsigned char initialized;  /* is random ordering initialized? */
     unsigned char pad_0[6];
-    unsigned long state;        /* PRNG state */
-    unsigned long count;        /* how many tests, this pass */
-    unsigned long count_ceil;   /* total number of tests */
-    unsigned long count_run;    /* total tests run */
-    unsigned long a;            /* LCG multiplier */
-    unsigned long c;            /* LCG increment */
-    unsigned long m;            /* LCG modulus, based on count_ceil */
+    uint32_t state;        /* PRNG state */
+    uint32_t count;        /* how many tests, this pass */
+    uint32_t count_ceil;   /* total number of tests */
+    uint32_t count_run;    /* total tests run */
+    uint32_t a;            /* LCG multiplier */
+    uint32_t c;            /* LCG increment */
+    uint32_t m;            /* LCG modulus, based on count_ceil */
 };
 
 /* Struct containing all test runner state. */
@@ -310,7 +310,7 @@ void greatest_test_post(int res);
 int greatest_do_assert_equal_t(const void *expd, const void *got,
     greatest_type_info *type_info, void *udata);
 void greatest_prng_init_first_pass(int id);
-int greatest_prng_init_second_pass(int id, unsigned long seed);
+int greatest_prng_init_second_pass(int id, uint32_t seed);
 void greatest_prng_step(int id);
 
 /* These are part of the public greatest API. */
@@ -651,7 +651,7 @@ typedef enum greatest_test_res {
 
 #define GREATEST_CLOCK_DIFF(C1, C2)                                     \
     GREATEST_FPRINTF(GREATEST_STDOUT, " (%lu ticks, %.3f sec)",         \
-        (long unsigned int) (C2) - (long unsigned int)(C1),             \
+        (uint32_t unsigned int) (C2) - (uint32_t unsigned int)(C1),             \
         (double)((C2) - (C1)) / (1.0 * (double)CLOCKS_PER_SEC))
 #else
 #define GREATEST_SET_TIME(UNUSED)
@@ -1106,7 +1106,7 @@ void greatest_prng_init_first_pass(int id) {                            \
     greatest_info.prng[id].count_run = 0;                               \
 }                                                                       \
                                                                         \
-int greatest_prng_init_second_pass(int id, unsigned long seed) {        \
+int greatest_prng_init_second_pass(int id, uint32_t seed) {        \
     struct greatest_prng *p = &greatest_info.prng[id];                  \
     if (p->count == 0) { return 0; }                                    \
     p->count_ceil = p->count;                                           \
