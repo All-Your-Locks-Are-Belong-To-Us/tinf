@@ -15,7 +15,8 @@ endif()
 #
 # When built standalone, it defaults to the value of BUILD_TESTING if set.
 # An optional prefix for the test names can be set with TINF_TEST_PREFIX.
-set(_tinf_testing_default ON)
+set(_tinf_testing_default OFF)
+set(_tinf_tgunzip_default OFF)
 if(_tinf_standalone)
   if(DEFINED BUILD_TESTING)
     set(_tinf_testing_default ${BUILD_TESTING})
@@ -24,6 +25,7 @@ else()
   set(_tinf_testing_default OFF)
 endif()
 option(TINF_BUILD_TESTING "Add testing support" ${_tinf_testing_default})
+option(TINF_BUILD_TGUNZIP "Enable building tgunzip exectuable" ${_tinf_tgunzip_default})
 unset(_tinf_testing_default)
 
 mark_as_advanced(TINF_TEST_PREFIX)
@@ -50,6 +52,7 @@ endif()
 # tinf
 #
 add_library(tinf
+  OBJECT
   src/adler32.c
   src/crc32.c
   src/tinfgzip.c
@@ -59,13 +62,15 @@ add_library(tinf
 )
 target_include_directories(tinf PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>)
 
-#
-# tgunzip
-#
-add_executable(tgunzip examples/tgunzip/tgunzip.c)
-target_link_libraries(tgunzip PRIVATE tinf)
-if(MSVC)
-  target_compile_definitions(tgunzip PRIVATE _CRT_SECURE_NO_WARNINGS)
+if(TINF_BUILD_TGUNZIP)
+  #
+  # tgunzip
+  #
+  add_executable(tgunzip examples/tgunzip/tgunzip.c)
+  target_link_libraries(tgunzip PRIVATE tinf)
+  if(MSVC)
+    target_compile_definitions(tgunzip PRIVATE _CRT_SECURE_NO_WARNINGS)
+  endif()
 endif()
 
 #
