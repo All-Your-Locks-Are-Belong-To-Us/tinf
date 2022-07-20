@@ -47,14 +47,14 @@ static uint32_t read_le32(const unsigned char *p)
          | ((uint32_t) p[3] << 24);
 }
 
-uint32_t tinf_gzip_uncompress(void *dest, uint32_t *destLen,
+int32_t tinf_gzip_uncompress(void *dest, uint32_t *destLen,
                          const void *source, uint32_t sourceLen)
 {
     const unsigned char *src = (const unsigned char *) source;
     unsigned char *dst = (unsigned char *) dest;
     const unsigned char *start;
     uint32_t dlen, crc32;
-    uint32_t res;
+    int32_t res;
     unsigned char flg;
 
     /* -- Check header -- */

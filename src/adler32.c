@@ -41,8 +41,8 @@ uint32_t tinf_adler32(const void *data, uint32_t length)
     uint32_t s2 = 0;
 
     while (length > 0) {
-        uint32_t k = length < A32_NMAX ? length : A32_NMAX;
-        uint32_t i;
+        int32_t k = length < A32_NMAX ? length : A32_NMAX;
+        int32_t i;
 
         for (i = k / 16; i; --i, buf += 16) {
             s1 += buf[0];

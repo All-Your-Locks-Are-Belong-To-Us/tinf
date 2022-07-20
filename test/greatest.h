@@ -650,8 +650,8 @@ typedef enum greatest_test_res {
     }
 
 #define GREATEST_CLOCK_DIFF(C1, C2)                                     \
-    GREATEST_FPRINTF(GREATEST_STDOUT, " (%lu ticks, %.3f sec)",         \
-        (uint32_t unsigned int) (C2) - (uint32_t unsigned int)(C1),             \
+    GREATEST_FPRINTF(GREATEST_STDOUT, " (%u ticks, %.3f sec)",          \
+        (uint32_t) (C2) - (uint32_t)(C1),                               \
         (double)((C2) - (C1)) / (1.0 * (double)CLOCKS_PER_SEC))
 #else
 #define GREATEST_SET_TIME(UNUSED)
@@ -1116,7 +1116,7 @@ int greatest_prng_init_second_pass(int id, uint32_t seed) {        \
     p->a = (p->a ? p->a : 4) | 1;            /* multiplied by 4 */      \
     p->c = 2147483647;        /* and so p->c ((2 ** 31) - 1) is */      \
     p->initialized = 1;     /* always relatively prime to p->a. */      \
-    fprintf(stderr, "init_second_pass: a %lu, c %lu, state %lu\n",      \
+    fprintf(stderr, "init_second_pass: a %u, c %u, state %u\n",         \
         p->a, p->c, p->state);                                          \
     return 1;                                                           \
 }                                                                       \

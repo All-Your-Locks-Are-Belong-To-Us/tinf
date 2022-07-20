@@ -37,15 +37,15 @@
 struct tinf_tree {
     unsigned short counts[16]; /* Number of codes with a given length */
     unsigned short symbols[288]; /* Symbols sorted by code */
-    uint32_t max_sym;
+    int32_t max_sym;
 };
 
 struct tinf_data {
     const unsigned char *source;
     const unsigned char *source_end;
     uint32_t tag;
-    uint32_t bitcount;
-    uint32_t overflow;
+    int32_t bitcount;
+    int32_t overflow;
 
     unsigned char *dest_start;
     unsigned char *dest;
@@ -66,7 +66,7 @@ static uint32_t read_le16(const unsigned char *p)
 /* Build fixed Huffman trees */
 static void tinf_build_fixed_trees(struct tinf_tree *lt, struct tinf_tree *dt)
 {
-    uint32_t i;
+    int32_t i;
 
     /* Build fixed literal/length tree */
     for (i = 0; i < 16; ++i) {
@@ -107,7 +107,7 @@ static void tinf_build_fixed_trees(struct tinf_tree *lt, struct tinf_tree *dt)
 }
 
 /* Given an array of code lengths, build a tree */
-static uint32_t tinf_build_tree(struct tinf_tree *t, const unsigned char *lengths,
+static int32_t tinf_build_tree(struct tinf_tree *t, const unsigned char *lengths,
                            uint32_t num)
 {
     unsigned short offs[16];
@@ -175,7 +175,7 @@ static uint32_t tinf_build_tree(struct tinf_tree *t, const unsigned char *length
 
 /* -- Decode functions -- */
 
-static void tinf_refill(struct tinf_data *d, uint32_t num)
+static void tinf_refill(struct tinf_data *d, int32_t num)
 {
     assert(num >= 0 && num <= 32);
 
@@ -193,7 +193,7 @@ static void tinf_refill(struct tinf_data *d, uint32_t num)
     assert(d->bitcount <= 32);
 }
 
-static uint32_t tinf_getbits_no_refill(struct tinf_data *d, uint32_t num)
+static uint32_t tinf_getbits_no_refill(struct tinf_data *d, int32_t num)
 {
     uint32_t bits;
 
@@ -210,23 +210,23 @@ static uint32_t tinf_getbits_no_refill(struct tinf_data *d, uint32_t num)
 }
 
 /* Get num bits from source stream */
-static uint32_t tinf_getbits(struct tinf_data *d, uint32_t num)
+static uint32_t tinf_getbits(struct tinf_data *d, int32_t num)
 {
     tinf_refill(d, num);
     return tinf_getbits_no_refill(d, num);
 }
 
 /* Read a num bit value from stream and add base */
-static uint32_t tinf_getbits_base(struct tinf_data *d, uint32_t num, uint32_t base)
+static uint32_t tinf_getbits_base(struct tinf_data *d, int32_t num, int32_t base)
 {
     return base + (num ? tinf_getbits(d, num) : 0);
 }
 
 /* Given a data stream and a tree, decode a symbol */
-static uint32_t tinf_decode_symbol(struct tinf_data *d, const struct tinf_tree *t)
+static int32_t tinf_decode_symbol(struct tinf_data *d, const struct tinf_tree *t)
 {
-    uint32_t base = 0, offs = 0;
-    uint32_t len;
+    int32_t base = 0, offs = 0;
+    int32_t len;
 
     /*
      * Get more bits while code index is above number of codes
@@ -260,7 +260,7 @@ static uint32_t tinf_decode_symbol(struct tinf_data *d, const struct tinf_tree *
 }
 
 /* Given a data stream, decode dynamic trees from it */
-static uint32_t tinf_decode_trees(struct tinf_data *d, struct tinf_tree *lt,
+static int32_t tinf_decode_trees(struct tinf_data *d, struct tinf_tree *lt,
                              struct tinf_tree *dt)
 {
     unsigned char lengths[288 + 32];
@@ -273,7 +273,7 @@ static uint32_t tinf_decode_trees(struct tinf_data *d, struct tinf_tree *lt,
 
     uint32_t hlit, hdist, hclen;
     uint32_t i, num, length;
-    uint32_t res;
+    int32_t res;
 
     /* Get 5 bits HLIT (257-286) */
     hlit = tinf_getbits_base(d, 5, 257);
@@ -323,7 +323,7 @@ static uint32_t tinf_decode_trees(struct tinf_data *d, struct tinf_tree *lt,
 
     /* Decode code lengths for the dynamic trees */
     for (num = 0; num < hlit + hdist; ) {
-        uint32_t sym = tinf_decode_symbol(d, lt);
+        int32_t sym = tinf_decode_symbol(d, lt);
 
         if (sym > lt->max_sym) {
             return TINF_DATA_ERROR;
@@ -387,7 +387,7 @@ static uint32_t tinf_decode_trees(struct tinf_data *d, struct tinf_tree *lt,
 /* -- Block inflate functions -- */
 
 /* Given a stream and two trees, inflate a block of data */
-static uint32_t tinf_inflate_block_data(struct tinf_data *d, struct tinf_tree *lt,
+static int32_t tinf_inflate_block_data(struct tinf_data *d, struct tinf_tree *lt,
                                    struct tinf_tree *dt)
 {
     /* Extra bits and base tables for length codes */
@@ -417,7 +417,7 @@ static uint32_t tinf_inflate_block_data(struct tinf_data *d, struct tinf_tree *l
     };
 
     for (;;) {
-        uint32_t sym = tinf_decode_symbol(d, lt);
+        int32_t sym = tinf_decode_symbol(d, lt);
 
         /* Check for overflow in bit reader */
         if (d->overflow) {
@@ -431,8 +431,8 @@ static uint32_t tinf_inflate_block_data(struct tinf_data *d, struct tinf_tree *l
             *d->dest++ = sym;
         }
         else {
-            uint32_t length, dist, offs;
-            uint32_t i;
+            int32_t length, dist, offs;
+            int32_t i;
 
             /* Check for end of block */
             if (sym == 256) {
@@ -480,7 +480,7 @@ static uint32_t tinf_inflate_block_data(struct tinf_data *d, struct tinf_tree *l
 }
 
 /* Inflate an uncompressed block of data */
-static uint32_t tinf_inflate_uncompressed_block(struct tinf_data *d)
+static int32_t tinf_inflate_uncompressed_block(struct tinf_data *d)
 {
     uint32_t length, invlength;
 
@@ -522,7 +522,7 @@ static uint32_t tinf_inflate_uncompressed_block(struct tinf_data *d)
 }
 
 /* Inflate a block of data compressed with fixed Huffman trees */
-static uint32_t tinf_inflate_fixed_block(struct tinf_data *d)
+static int32_t tinf_inflate_fixed_block(struct tinf_data *d)
 {
     /* Build fixed Huffman trees */
     tinf_build_fixed_trees(&d->ltree, &d->dtree);
@@ -532,10 +532,10 @@ static uint32_t tinf_inflate_fixed_block(struct tinf_data *d)
 }
 
 /* Inflate a block of data compressed with dynamic Huffman trees */
-static uint32_t tinf_inflate_dynamic_block(struct tinf_data *d)
+static int32_t tinf_inflate_dynamic_block(struct tinf_data *d)
 {
     /* Decode trees from stream */
-    uint32_t res = tinf_decode_trees(d, &d->ltree, &d->dtree);
+    int32_t res = tinf_decode_trees(d, &d->ltree, &d->dtree);
 
     if (res != TINF_OK) {
         return res;
@@ -554,11 +554,11 @@ void tinf_init(void)
 }
 
 /* Inflate stream from source to dest */
-uint32_t tinf_uncompress(void *dest, uint32_t *destLen,
+int32_t tinf_uncompress(void *dest, uint32_t *destLen,
                     const void *source, uint32_t sourceLen)
 {
     struct tinf_data d;
-    uint32_t bfinal;
+    int32_t bfinal;
 
     /* Initialise data */
     d.source = (const unsigned char *) source;
@@ -573,7 +573,7 @@ uint32_t tinf_uncompress(void *dest, uint32_t *destLen,
 
     do {
         uint32_t btype;
-        uint32_t res;
+        int32_t res;
 
         /* Read final block flag */
         bfinal = tinf_getbits(&d, 1);

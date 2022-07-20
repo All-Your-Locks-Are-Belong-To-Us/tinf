@@ -78,7 +78,7 @@ void TINFCC tinf_init(void);
  * @param sourceLen size of compressed data
  * @return `TINF_OK` on success, error code on error
  */
-uint32_t TINFCC tinf_uncompress(void *dest, uint32_t *destLen,
+int32_t TINFCC tinf_uncompress(void *dest, uint32_t *destLen,
                            const void *source, uint32_t sourceLen);
 
 /**
@@ -96,7 +96,7 @@ uint32_t TINFCC tinf_uncompress(void *dest, uint32_t *destLen,
  * @param sourceLen size of compressed data
  * @return `TINF_OK` on success, error code on error
  */
-uint32_t TINFCC tinf_gzip_uncompress(void *dest, uint32_t *destLen,
+int32_t TINFCC tinf_gzip_uncompress(void *dest, uint32_t *destLen,
                                 const void *source, uint32_t sourceLen);
 
 /**
@@ -114,7 +114,7 @@ uint32_t TINFCC tinf_gzip_uncompress(void *dest, uint32_t *destLen,
  * @param sourceLen size of compressed data
  * @return `TINF_OK` on success, error code on error
  */
-uint32_t TINFCC tinf_zlib_uncompress(void *dest, uint32_t *destLen,
+int32_t TINFCC tinf_zlib_uncompress(void *dest, uint32_t *destLen,
                                 const void *source, uint32_t sourceLen);
 
 /**
